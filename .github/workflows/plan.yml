@@ -33,17 +33,17 @@ on:
 
       # Azure OIDC — supply these three instead of azure_credentials to authenticate via OIDC.
       # The calling workflow must also declare: permissions: id-token: write
-      azure_client_id:
+      arm_client_id:
         description: "Azure client (application) ID for OIDC authentication."
         required: false
         type: string
         default: ''
-      azure_tenant_id:
+      arm_tenant_id:
         description: "Azure tenant ID for OIDC authentication."
         required: false
         type: string
         default: ''
-      azure_subscription_id:
+      arm_subscription_id:
         description: "Azure subscription ID for OIDC authentication."
         required: false
         type: string
@@ -115,7 +115,7 @@ on:
       gh_token:
         required: false
       # HashiCorp Vault
-      vault_url:
+      vault_addr:
         required: false
       vault_token:
         required: false
@@ -145,14 +145,14 @@ jobs:
       TF_TOKEN_app_terraform_io: ${{ secrets.terraform_token }}
       TFE_TOKEN: ${{ secrets.terraform_token }}
       AZURE_CREDENTIALS: ${{ secrets.azure_credentials }}
-      AZURE_CLIENT_ID: ${{ inputs.azure_client_id }}
+      ARM_CLIENT_ID: ${{ inputs.arm_client_id }}
       DATABRICKS_HOST: ${{ secrets.databricks_host }}
       DATABRICKS_AZURE_RESOURCE_ID: ${{ secrets.databricks_azure_workspace_resource_id }}
       AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
       AWS_ROLE_TO_ASSUME: ${{ secrets.aws_role_to_assume }}
       GITHUB_TOKEN_PROVIDER: ${{ secrets.gh_token }}
-      VAULT_URL: ${{ secrets.vault_url }}
+      VAULT_ADDR: ${{ secrets.vault_addr }}
       VAULT_TOKEN: ${{ secrets.vault_token }}
       VAULT_ROLE_ID: ${{ secrets.vault_role_id }}
       VAULT_SECRET_ID: ${{ secrets.vault_secret_id }}
@@ -189,18 +189,18 @@ jobs:
           terraform_wrapper: false
 
       - name: Azure Login (service principal)
-        if: env.AZURE_CREDENTIALS != '' && env.AZURE_CLIENT_ID == ''
+        if: env.AZURE_CREDENTIALS != '' && env.ARM_CLIENT_ID == ''
         uses: azure/login@v3
         with:
           creds: ${{ secrets.azure_credentials }}
 
       - name: Azure Login (OIDC)
-        if: env.AZURE_CLIENT_ID != ''
+        if: env.ARM_CLIENT_ID != ''
         uses: azure/login@v3
         with:
-          client-id: ${{ inputs.azure_client_id }}
-          tenant-id: ${{ inputs.azure_tenant_id }}
-          subscription-id: ${{ inputs.azure_subscription_id }}
+          client-id: ${{ inputs.arm_client_id }}
+          tenant-id: ${{ inputs.arm_tenant_id }}
+          subscription-id: ${{ inputs.arm_subscription_id }}
 
       - name: AWS Login
         if: env.AWS_ACCESS_KEY_ID != '' || env.AWS_ROLE_TO_ASSUME != ''
@@ -212,10 +212,10 @@ jobs:
           aws-region: ${{ inputs.aws_region }}
 
       - name: HashiCorp Vault Login
-        if: env.VAULT_URL != '' && (env.VAULT_TOKEN != '' || (env.VAULT_ROLE_ID != '' && env.VAULT_SECRET_ID != ''))
+        if: env.VAULT_ADDR != '' && (env.VAULT_TOKEN != '' || (env.VAULT_ROLE_ID != '' && env.VAULT_SECRET_ID != ''))
         uses: hashicorp/vault-action@v3
         with:
-          url: ${{ secrets.vault_url }}
+          url: ${{ secrets.vault_addr }}
           token: ${{ secrets.vault_token }}
           roleId: ${{ secrets.vault_role_id }}
           secretId: ${{ secrets.vault_secret_id }}

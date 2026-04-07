@@ -30,9 +30,9 @@ Supply these three inputs **instead of** `azure_credentials` to authenticate via
 
 | Input | Required | Description |
 |---|---|---|
-| `azure_client_id` | No | Azure client (application) ID |
-| `azure_tenant_id` | No | Azure tenant ID |
-| `azure_subscription_id` | No | Azure subscription ID |
+| `arm_client_id` | No | Azure client (application) ID |
+| `arm_tenant_id` | No | Azure tenant ID |
+| `arm_subscription_id` | No | Azure subscription ID |
 
 ### Azure blob storage backend
 
@@ -94,12 +94,12 @@ At least one of `aws_access_key_id` or `aws_role_to_assume` must be provided to 
 
 | Secret | Description |
 |---|---|
-| `vault_url` | Vault server URL |
+| `vault_addr` | Vault server URL |
 | `vault_token` | Vault token (token auth method) |
 | `vault_role_id` | Vault AppRole role ID (AppRole auth method) |
 | `vault_secret_id` | Vault AppRole secret ID (AppRole auth method) |
 
-`vault_url` must be provided alongside either `vault_token` (token auth) or both `vault_role_id` and `vault_secret_id` (AppRole auth) to trigger Vault login.
+`vault_addr` must be provided alongside either `vault_token` (token auth) or both `vault_role_id` and `vault_secret_id` (AppRole auth) to trigger Vault login.
 
 ### Snowflake
 
@@ -189,9 +189,9 @@ jobs:
   plan:
     uses: ac-on-ac/reusable-automated-terraform-plan/.github/workflows/plan.yml@v1.0.0
     with:
-      azure_client_id: ${{ vars.AZURE_CLIENT_ID }}
-      azure_tenant_id: ${{ vars.AZURE_TENANT_ID }}
-      azure_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      arm_client_id: ${{ vars.ARM_CLIENT_ID }}
+      arm_tenant_id: ${{ vars.ARM_TENANT_ID }}
+      arm_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
       azure_backend_resource_group_name: rg-terraform-state
       azure_backend_storage_account_name: stterraformstate
       azure_backend_container_name: tfstate
