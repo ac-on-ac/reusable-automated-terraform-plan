@@ -282,6 +282,53 @@ The comment header reflects the plan result:
 
 Plan output is truncated at 60,000 characters if the plan is very large.
 
+## Pairing with the apply workflow
+
+This workflow is designed to be used alongside [reusable-automated-terraform-apply](https://github.com/ac-on-ac/reusable-automated-terraform-apply), which runs `terraform apply` when a pull request is merged. Both workflows share the same inputs and secrets, so a single caller workflow file can handle the full plan → apply lifecycle:
+
+```yaml
+name: Terraform
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    if: github.event.action != 'closed'
+    uses: ac-on-ac/reusable-automated-terraform-plan/.github/workflows/plan.yml@v1.0.0
+    with:
+      azure_backend_resource_group_name: rg-terraform-state
+      azure_backend_storage_account_name: stterraformstate
+      azure_backend_container_name: tfstate
+      azure_backend_key: mymodule.tfstate
+    secrets:
+      azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+
+  apply:
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
+    uses: ac-on-ac/reusable-automated-terraform-apply/.github/workflows/apply.yml@v1.0.0
+    with:
+      azure_backend_resource_group_name: rg-terraform-state
+      azure_backend_storage_account_name: stterraformstate
+      azure_backend_container_name: tfstate
+      azure_backend_key: mymodule.tfstate
+    secrets:
+      azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+```
+
+The `apply` job guards on `github.event.pull_request.merged == true` because the `closed` event also fires when a PR is closed without merging.
+
 ## Releases
 
 This repository uses the [reusable-manual-release](https://github.com/ac-on-ac/reusable-manual-release) workflow to create releases. Releases are triggered manually from the **Actions** tab.
